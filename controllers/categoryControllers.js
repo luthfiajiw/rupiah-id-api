@@ -85,7 +85,15 @@ module.exports = function(app) {
         res.status(200).json({
           statusCode: 200,
           message: 'Category deleted.'
-        })
+        });
       })
+      .catch(err => {
+        res.status(500).json({
+          error: {
+            statusCode: 500,
+            message: 'Internal Server Error',
+          },
+        });
+      });
   })
 };

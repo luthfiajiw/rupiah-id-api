@@ -135,4 +135,25 @@ module.exports = function (app) {
         });
       });
   });
+
+  // Delete Product
+  app.delete('/api/v1/product/:productUuid', checkAuth, (req, res, next) => {
+    const { productUuid } = req.params;
+
+    Product.destroy({ where: { uuid: productUuid } })
+      .then(() => {
+        res.status(200).json({
+          statusCode: 200,
+          message: 'Product deleted.'
+        });
+      })
+      .catch(err => {
+        res.status(500).json({
+          error: {
+            statusCode: 500,
+            message: 'Internal Server Error',
+          },
+        });
+      });
+  });
 };
