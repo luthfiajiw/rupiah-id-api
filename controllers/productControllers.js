@@ -41,6 +41,15 @@ module.exports = function (app) {
 
     Product.findByPk(productUuid)
       .then(product => {
+        if (product === null) {
+          res.status(404).json({
+            error: {
+              statusCode: 404,
+              message: 'Product not found'
+            },
+          });
+        }
+
         res.status(200).json({
           statusCode: 200,
           message: 'successful',
@@ -48,7 +57,12 @@ module.exports = function (app) {
         });
       })
       .catch(err => {
-        res.status(404).json({ error: err })
+        res.status(404).json({
+          error: {
+            statusCode: 404,
+            message: 'Product not found'
+          }
+        });
       });
   })
 
@@ -85,6 +99,39 @@ module.exports = function (app) {
             statusCode: 500,
             message: 'Internal Server Error'
           },
+        });
+      });
+  });
+
+  // Patch Product
+  app.patch('/api/v1/product/:productUuid', checkAuth, (req, res, next) => {
+    const { productUuid } = req.params;
+    const {
+      product_name, refcode, base_price, price,
+      categoryUuid, stock
+    } = req.body;
+
+    const updatedProduct = {
+      product_name,
+      refcode: refcode.replace(/\s/g, ""), // remove all spaces
+      base_price,
+      price,
+      stock,
+      current_stock: stock,
+      categoryUuid,
+    }
+
+    Product.update(updatedProduct, { where: { uuid: productUuid } })
+      .then(() => {
+        res.status(200).json({
+          statusCode: 200,
+          message: 'Product updated.'
+        });
+      })
+      .catch(err => {
+        res.status(500).json({
+          statusCode: 500,
+          message: 'Internal Server Error',
         });
       });
   });
