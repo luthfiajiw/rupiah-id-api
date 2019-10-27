@@ -34,7 +34,7 @@ module.exports = function(app) {
 
     const newCategory = Category.build({
       category_name,
-      userUuid
+      userUuid,
     });
 
     console.log(newCategory);
@@ -55,5 +55,25 @@ module.exports = function(app) {
           ...err
         });
       });
+  })
+
+  // Patch Category
+  app.patch('/api/v1/category/:categoryUuid', checkAuth, (req, res, next) => {
+    const { categoryUuid } = req.params;
+    const { category_name } = req.body;
+
+    Category.update({ category_name }, { where: { uuid: categoryUuid } })
+      .then(() => {
+        res.status(200).json({
+          statusCode: 200,
+          message: 'Product updated.'
+        })
+      })
+      .catch(err => {
+        res.status(500).json({
+          error: err,
+        });
+      });
+
   })
 };

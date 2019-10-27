@@ -32,7 +32,7 @@ categoryControllers(app);
 
 // Connection to the database
 connection
-  .sync()
+  .authenticate()
   .then(() => {
     const server = app.listen(3000, () => {
       console.log('Your port is listening');
