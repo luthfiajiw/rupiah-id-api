@@ -35,6 +35,23 @@ module.exports = function (app) {
       });
   });
 
+  // Detail Product
+  app.get('/api/v1/product/:productUuid', checkAuth, (req, res, next) => {
+    const { productUuid } = req.params;
+
+    Product.findByPk(productUuid)
+      .then(product => {
+        res.status(200).json({
+          statusCode: 200,
+          message: 'successful',
+          data: product
+        });
+      })
+      .catch(err => {
+        res.status(404).json({ error: err })
+      });
+  })
+
   // Create Product
   app.post('/api/v1/products', checkAuth, (req, res, next) => {
     const { userUuid } = req.userData;
