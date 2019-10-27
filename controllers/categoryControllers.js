@@ -66,7 +66,7 @@ module.exports = function(app) {
       .then(() => {
         res.status(200).json({
           statusCode: 200,
-          message: 'Product updated.'
+          message: 'Category updated.'
         })
       })
       .catch(err => {
@@ -74,6 +74,18 @@ module.exports = function(app) {
           error: err,
         });
       });
+  });
 
+  // Delete Category
+  app.delete('/api/v1/category/:categoryUuid', checkAuth, (req, res, next) => {
+    const { categoryUuid } = req.params;
+
+    Category.destroy({ where: { uuid: categoryUuid }})
+      .then(() => {
+        res.status(200).json({
+          statusCode: 200,
+          message: 'Category deleted.'
+        })
+      })
   })
 };
