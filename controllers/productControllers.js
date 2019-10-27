@@ -4,6 +4,9 @@ const Product = require('../models/Product');
 const Category = require('../models/Category');
 const checkAuth = require('../config/check-auth');
 
+// Operators
+const Op = Sequelize.Op;
+
 module.exports = function (app) {
   // All Products
   app.get('/api/v1/products', checkAuth, (req, res, next) => {
@@ -64,6 +67,29 @@ module.exports = function (app) {
           }
         });
       });
+  });
+
+  // Search Product
+  app.get('/api/v1/search', checkAuth, (req, res, next) => {
+    const { products } = req.query;
+
+    Product.findAll({
+      where: {
+        product_name: { [Op.like]: `${products}%` }
+      }
+    })
+    .then(products => {
+      res.status(200).json({
+        statusCode: 200,
+        message: 'successful',
+        data: products
+      });
+    })
+    .catch(err => {
+      res.status(500).json({
+        error: err
+      });
+    });
   })
 
   // Create Product
