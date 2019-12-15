@@ -2,6 +2,10 @@ const express = require('express');
 const http = require('http');
 
 const connection = require('./config/connection');
+const cityModel = require('./models/City');
+const provinceModel = require('./models/Province');
+const subdistrictModel = require('./models/Subdistrict');
+
 const userControllers = require('./controllers/userControllers');
 const productControllers = require('./controllers/productControllers');
 const categoryControllers = require('./controllers/categoryControllers');
@@ -32,7 +36,7 @@ categoryControllers(app);
 
 // Connection to the database
 connection
-  .authenticate()
+  .sync()
   .then(() => {
     const server = app.listen(3000, () => {
       console.log('Your port is listening');

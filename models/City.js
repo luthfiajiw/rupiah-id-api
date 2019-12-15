@@ -1,14 +1,19 @@
 const Sequelize = require('sequelize');
 
 const connection = require('../config/connection');
+const cities = require('../data/cities');
+const Province = require('./Province');
 
 const City = connection.define('city', {
   id: {
     type: Sequelize.INTEGER,
-    autoIncrement: true,
     primaryKey: true,
   },
-  city_name: Sequelize.STRING,
+  name: Sequelize.STRING,
 });
+
+City.belongsTo(Province);
+
+City.bulkCreate(cities).then(result => console.log(result));
 
 module.exports = City;
