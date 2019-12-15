@@ -1,7 +1,7 @@
-function errorHandler(err, res) {
-	res.status(500).json({
+function errorHandler(statusCode, err, res) {
+	res.status(statusCode).json({
 		error: {
-			statusCode: 500,
+			statusCode,
 			message: err
 		}
 	});
