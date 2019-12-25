@@ -16,7 +16,32 @@ module.exports = function (app) {
 	// All Products
 	app.get('/api/v1/products', checkAuth, (req, res, next) => {
 		const { userUuid } = req.userData;
+		const { search } = req.query;
 		const { page, perPage } = pageQueryHandler(req.query);
+
+		// Search Products
+		if (search !== undefined) {
+			return Product.findAndCountAll({
+				where: {
+					userUuid,
+					product_name: { [Op.like]: `${search}%` },
+				},
+				limit: perPage,
+				offset: (page - 1) * 10
+			})
+				.then(products => {
+					const totalPage = Math.ceil(products.count/perPage);
+					const pagination = paginationHandler(page, perPage, totalPage);
+					const datas = {
+						...products,
+						...pagination
+					}
+					responseHandler(res, datas);
+				})
+				.catch(err => {
+					errorHandler(500, err, res);
+				});
+		}
 
 		Product.findAndCountAll({
 			where: {userUuid},
@@ -39,12 +64,12 @@ module.exports = function (app) {
 				responseHandler(res, datas);
 			})
 			.catch(err => {
-				errorHandler(500, er, res);
+				errorHandler(500, err, res);
 			});
 	});
 
 	// Detail Product
-	app.get('/api/v1/product/:productUuid', checkAuth, (req, res, next) => {
+	app.get('/api/v1/products/:productUuid', checkAuth, (req, res, next) => {
 		const { productUuid } = req.params;
 
 		Product.findByPk(productUuid)
@@ -65,35 +90,7 @@ module.exports = function (app) {
 				});
 			})
 			.catch(err => {
-				res.status(404).json({
-					error: {
-						statusCode: 404,
-						message: 'Product not found'
-					}
-				});
-			});
-	});
-
-	// Search Product
-	app.get('/api/v1/products', checkAuth, (req, res, next) => {
-		const { search } = req.query;
-
-		Product.findAll({
-			where: {
-				product_name: { [Op.like]: `${search}%` }
-			}
-		})
-			.then(products => {
-				res.status(200).json({
-					statusCode: 200,
-					message: 'successful',
-					data: products
-				});
-			})
-			.catch(err => {
-				res.status(500).json({
-					error: err
-				});
+				errorHandler(500, err, res);
 			});
 	});
 
