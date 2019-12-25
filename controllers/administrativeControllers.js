@@ -11,26 +11,29 @@ module.exports = function (app) {
 
 	// get all provinces
 	app.get('/api/v1/provinces', checkAuth, (req, res, next) => {
-		let page = 1;
-		let per_page = 10;
-		let nextUrl = `http://localhost:3000/api/v1/provinces?page=${page+1}&per_page=${per_page}`;
-		let prevUrl = `http://localhost:3000/api/v1/provinces?page=${page-1}&per_page=${per_page}`;
-		let first = `http://localhost:3000/api/v1/provinces?page=1&per_page=${per_page}`;
+		const { page, per_page } = req.query;
+
+		let _page = page === undefined ? 1 : parseInt(page, 10);
+		let perPage = per_page === undefined ? 10 : parseInt(per_page, 10);
+		let nextUrl = `localhost:3000/api/v1/provinces?page=${_page+1}&per_page=${perPage}`;
+		let prevUrl = `localhost:3000/api/v1/provinces?page=${_page-1}&per_page=${perPage}`;
+		let first = `localhost:3000/api/v1/provinces?page=1&per_page=${perPage}`;
 
 		Province.findAndCountAll({
 			attributes: {exclude: ['createdAt', 'updatedAt']},
-			limit: 10,
-			offset: 0
+			limit: perPage,
+			offset: (_page - 1) * 10
 		})
   		.then(provinces => {
+				const total_page = Math.ceil(provinces.count/perPage);
 				const datas = {
 					...provinces,
-					page, per_page,
-					total_page: Math.ceil(provinces.count/per_page),
+					_page, perPage,
+					total_page,
 					nextUrl,
 					prevUrl,
 					first,
-					last: `http://localhost:3000/api/v1/provinces?page=${Math.ceil(provinces.count/per_page)}&per_page=${per_page}`
+					last: `localhost:3000/api/v1/provinces?page=${total_page}&per_page=${perPage}`
 				}
   			responseHandler(res, datas);
   		})
