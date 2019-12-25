@@ -2,6 +2,11 @@ const Sequelize = require('sequelize');
 
 const Product = require('../models/Product');
 const Category = require('../models/Category');
+
+const pageQueryHandler = require('../helper/pageQueryHandler');
+const paginationHandler = require('../helper/paginationHandler');
+const responseHandler = require('../helper/responseHandler');
+const errorHandler = require('../helper/errorHandler');
 const checkAuth = require('../config/check-auth');
 
 // Operators
@@ -11,30 +16,30 @@ module.exports = function (app) {
 	// All Products
 	app.get('/api/v1/products', checkAuth, (req, res, next) => {
 		const { userUuid } = req.userData;
+		const { page, perPage } = pageQueryHandler(req.query);
 
-		Product.findAll({
+		Product.findAndCountAll({
 			where: {userUuid},
 			attributes: { exclude: ['userUuid', 'categoryUuid']},
 			include: [{
 				model: Category,
 				as: 'category',
 				attributes: ['uuid', 'category_name'],
-			}]
+			}],
+			limit: perPage,
+			offset: (page - 1) * 10
 		})
 			.then(products => {
-				res.status(200).json({
-					statusCode: 200,
-					message: 'successful',
-					data: products,
-				});
+				const totalPage = Math.ceil(products.count/perPage);
+				const pagination = paginationHandler(page, perPage, totalPage);
+				const datas = {
+					...products,
+					...pagination
+				}
+				responseHandler(res, datas);
 			})
 			.catch(err => {
-				res.status(500).json({
-					error: {
-						statusCode: 500,
-						message: 'Internal Server Error',
-					},
-				});
+				errorHandler(500, er, res);
 			});
 	});
 
