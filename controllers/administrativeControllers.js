@@ -5,6 +5,7 @@ const City = require('../models/City');
 
 const errorHandler = require('../helper/errorHandler');
 const responseHandler = require('../helper/responseHandler');
+const paginationHandler = require('../helper/paginationHandler');
 const checkAuth= require('../config/check-auth');
 
 module.exports = function (app) {
@@ -15,9 +16,6 @@ module.exports = function (app) {
 
 		let _page = page === undefined ? 1 : parseInt(page, 10);
 		let perPage = per_page === undefined ? 10 : parseInt(per_page, 10);
-		let nextUrl = `localhost:3000/api/v1/provinces?page=${_page+1}&per_page=${perPage}`;
-		let prevUrl = `localhost:3000/api/v1/provinces?page=${_page-1}&per_page=${perPage}`;
-		let first = `localhost:3000/api/v1/provinces?page=1&per_page=${perPage}`;
 
 		Province.findAndCountAll({
 			attributes: {exclude: ['createdAt', 'updatedAt']},
@@ -25,15 +23,11 @@ module.exports = function (app) {
 			offset: (_page - 1) * 10
 		})
   		.then(provinces => {
-				const total_page = Math.ceil(provinces.count/perPage);
+				const totalPage = Math.ceil(provinces.count/perPage);
+				const pagination = paginationHandler(_page, perPage, totalPage);
 				const datas = {
 					...provinces,
-					_page, perPage,
-					total_page,
-					nextUrl,
-					prevUrl,
-					first,
-					last: `localhost:3000/api/v1/provinces?page=${total_page}&per_page=${perPage}`
+					...pagination,
 				}
   			responseHandler(res, datas);
   		})
